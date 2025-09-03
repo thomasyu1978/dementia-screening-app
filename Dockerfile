@@ -4,7 +4,7 @@ FROM python:3.11-slim
 # 2. 在容器内部创建一个工作目录
 WORKDIR /app
 
-# 3. 更新包管理器并安装所有系统级依赖 (这是关键改动！)
+# 3. 更新包管理器并安装所有系统级依赖
 #    我们现在一次性安装 ffmpeg, build-essential, 和 portaudio19-dev
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
@@ -23,18 +23,3 @@ EXPOSE 10000
 
 # 7. 容器启动时运行的命令
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
-
-### 关键改动
-
-我将原来的第3步修改为：
-```dockerfile
-# 旧代码:
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg
-
-# 新代码 (将所有系统依赖合并到一起安装):
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    build-essential \
-    portaudio19-dev
-
-
