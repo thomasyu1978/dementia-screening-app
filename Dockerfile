@@ -23,7 +23,6 @@ EXPOSE 10000
 
 # 7. 容器启动时运行的命令
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
-```
 
 ### 关键改动
 
@@ -37,4 +36,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     build-essential \
     portaudio19-dev
+
 
