@@ -137,24 +137,34 @@
             formData.append('audio', audioBlob, 'recording.webm');
             
             try {
-                // --- 核心改动：使用相对URL而不是写死的本地地址 ---
                 const response = await fetch('/analyze', {
                     method: 'POST',
                     body: formData
                 });
-                // --- 改动结束 ---
 
+                // --- 核心改动：更稳健的错误处理 ---
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    const contentType = response.headers.get("content-type");
+                    let errorText;
+                    // 如果返回的是HTML或纯文本，就直接显示文本内容
+                    if (contentType && (contentType.indexOf("application/json") === -1)) {
+                        errorText = await response.text();
+                    } else {
+                        // 如果返回的是JSON，就尝试解析JSON里的错误信息
+                        const errorData = await response.json();
+                        errorText = errorData.error || `HTTP error! status: ${response.status}`;
+                    }
+                    throw new Error(errorText);
                 }
+                // --- 改动结束 ---
 
                 const data = await response.json();
                 displayResults(data);
 
             } catch (error) {
                 console.error("Error sending audio to backend:", error);
-                status.textContent = `Analysis failed: ${error.message}. Please try again.`;
+                // 现在能显示更有用的错误信息，比如服务器返回的HTML错误页面内容
+                status.textContent = `Analysis failed: Server returned an error. Please check server logs.`;
                 results.classList.add('hidden');
             }
         }
@@ -188,5 +198,7 @@
     </script>
 </body>
 </html>
+
+
 
 
