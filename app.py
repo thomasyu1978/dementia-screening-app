@@ -5,9 +5,11 @@ import numpy as np
 import soundfile as sf
 import io
 from pydub import AudioSegment
+import whisper # 导入Whisper
 
 # 初始化Flask应用
 app = Flask(__name__)
+model = whisper.load_model("tiny.en") # 加载小型的Whisper模型
 
 # 使用Flask的after_request装饰器手动添加CORS头
 @app.after_request
@@ -17,34 +19,22 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
-# --- 新增代码：添加一个路由来服务前端HTML页面 ---
+# 添加一个路由来服务前端HTML页面
 @app.route('/')
 def serve_index():
-    # 这个函数会寻找并返回与app.py在同一个目录下的dementia_screening_demo.html文件
     return send_from_directory('.', 'dementia_screening_demo.html')
-# --- 新增代码结束 ---
-
-
-# 用于语音识别的识别器实例
-r = sr.Recognizer()
 
 def analyze_audio_features(audio_data, sr_librosa):
-    # 查找非静音部分
     non_silent_intervals = librosa.effects.split(audio_data, top_db=20)
-    
     pauses = []
-    # 计算每次停顿的持续时间
     for i in range(len(non_silent_intervals) - 1):
         pause_start = non_silent_intervals[i][1] / sr_librosa
         pause_end = non_silent_intervals[i+1][0] / sr_librosa
         pause_duration = pause_end - pause_start
-        if pause_duration > 0.1: # 只考虑超过0.1秒的停顿
+        if pause_duration > 0.1:
             pauses.append(pause_duration)
-            
     if not pauses:
         return 0.0
-
-    # 返回平均停顿时长
     return np.mean(pauses)
 
 @app.route('/analyze', methods=['POST'])
@@ -55,17 +45,20 @@ def analyze():
     audio_file = request.files['audio']
     
     try:
-        # 将传入的音频转换为WAV格式
         audio_segment = AudioSegment.from_file(audio_file)
-        
         wav_io = io.BytesIO()
-        audio_segment.export(wav_io, format="wav")
+        # 将音频转换为16kHz单声道，这是Whisper需要的格式
+        audio_segment.set_frame_rate(16000).set_channels(1).export(wav_io, format="wav")
         wav_io.seek(0)
-
-        # 语音转文字
-        with sr.AudioFile(wav_io) as source:
-            audio_data_sr = r.record(source)
-            transcript = r.recognize_google(audio_data_sr, language='en-US')
+        
+        # --- 最终修复：使用本地Whisper模型进行语音识别 ---
+        with sf.SoundFile(wav_io, 'r') as sound_file:
+            audio_data_whisper = sound_file.read(dtype='float32')
+        
+        # 将音频数据转换为numpy数组并进行识别
+        result = model.transcribe(audio_data_whisper, fp16=False)
+        transcript = result['text']
+        # --- 修复结束 ---
             
         word_count = len(transcript.split())
 
@@ -113,14 +106,11 @@ def analyze():
             "transcript": transcript
         })
 
-    except sr.UnknownValueError:
-        return jsonify({"error": "Speech recognition could not understand audio"}), 400
-    except sr.RequestError as e:
-        return jsonify({"error": f"Speech recognition service error; {e}"}), 500
     except Exception as e:
-        print(f"An error occurred: {e}")
-        return jsonify({"error": "An internal error occurred"}), 500
+        # 在生产环境中，打印详细错误到日志，但返回一个通用的错误信息给前端
+        print(f"An error occurred during analysis: {e}")
+        return jsonify({"error": "An internal server error occurred during analysis."}), 500
 
-# 注意：用于生产环境的代码不应包含 if __name__ == '__main__': app.run()
+
 
 
