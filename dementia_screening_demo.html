@@ -5,293 +5,188 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cognitive Health Screening Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
-            font-family: 'Inter', 'Noto Sans SC', sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .card {
-            background-color: white;
-            border-radius: 1.5rem;
-            padding: 2rem;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-            transition: all 0.3s ease-in-out;
+        .pulse {
+            animation: pulse-animation 1.5s infinite;
         }
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            color: white;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            outline: none;
-        }
-        .btn-primary {
-            background: linear-gradient(to right, #4f46e5, #818cf8);
-        }
-        .btn-primary:hover {
-            box-shadow: 0 0 20px #818cf8a0;
-        }
-        .btn-danger {
-            background: linear-gradient(to right, #ef4444, #f87171);
-        }
-        .btn-danger:hover {
-            box-shadow: 0 0 20px #f87171a0;
-        }
-        .btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .pulsing-indicator {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #ef4444;
-            animation: pulse 1.5s infinite;
-            display: none; /* Initially hidden */
-        }
-        @keyframes pulse {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-            }
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-        .result-badge {
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: white;
-            text-align: center;
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
     </style>
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 max-w-2xl w-full m-4">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Cognitive Health Screening</h1>
+            <p class="text-gray-500 mt-2">Please read the following passage aloud clearly and at a natural pace.</p>
+        </header>
 
-    <div class="w-full max-w-lg mx-auto p-4 md:p-6">
-        <div class="card">
-            <div class="text-center">
-                <h1 class="text-3xl font-bold text-gray-800">Cognitive Health Screening</h1>
-                <p class="mt-2 text-gray-500">Early risk assessment by analyzing your voice and language features.</p>
-            </div>
+        <div class="bg-gray-100 rounded-lg p-4 mb-6 text-gray-700">
+            <p>"The sun dips below the horizon, painting the sky in shades of orange and purple. A gentle breeze rustles the leaves in the tall trees that line the quiet park path. Children's laughter echoes in the distance as they finish their games. It's a peaceful end to a long day, a time for quiet reflection and rest."</p>
+        </div>
 
-            <!-- Step 1: Instructions -->
-            <div class="mt-8">
-                <h2 class="text-xl font-semibold text-gray-700">Step 1: Read the passage below</h2>
-                <p class="mt-3 p-4 bg-gray-100 rounded-xl text-gray-600 border border-gray-200">
-                    The sun is shining brightly today, and a gentle breeze is blowing. I am planning to take a walk in the park to see the flowers and trees, and to listen to the birds singing. These simple joys in life always bring me a good mood.
-                </p>
-            </div>
-            
-            <!-- Step 2: Recording Controls -->
-            <div class="mt-8">
-                <h2 class="text-xl font-semibold text-gray-700">Step 2: Click the button to start recording</h2>
-                <div class="mt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button id="startButton" class="btn btn-primary w-full sm:w-auto">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-                        Start Recording
-                    </button>
-                    <button id="stopButton" class="btn btn-danger w-full sm:w-auto" disabled>
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"></path></svg>
-                        Stop Recording
-                    </button>
-                    <div id="recordingIndicator" class="pulsing-indicator"></div>
-                </div>
-                <div id="timer" class="text-center mt-3 text-gray-500 font-mono text-lg">00:00</div>
-            </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <button id="recordButton" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                <svg id="micIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                <span id="recordButtonText">Start Recording</span>
+            </button>
+            <button id="stopButton" class="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105" disabled>
+                Stop Recording
+            </button>
+        </div>
 
-            <!-- Step 3: Results -->
-            <div id="results" class="mt-8 hidden">
-                <h2 class="text-xl font-semibold text-gray-700 text-center">Analysis Results</h2>
-                <div class="mt-4 p-6 bg-indigo-50 rounded-2xl border border-indigo-100">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                        <div>
-                            <p class="text-sm text-gray-500">Speaking Rate</p>
-                            <p id="speakingRate" class="text-2xl font-bold text-indigo-600"></p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Avg. Pause Duration</p>
-                            <p id="pauseDuration" class="text-2xl font-bold text-indigo-600"></p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Lexical Richness</p>
-                            <p id="lexicalRichness" class="text-2xl font-bold text-indigo-600"></p>
-                        </div>
-                    </div>
-                    <div id="transcript-container" class="mt-4 pt-4 border-t border-indigo-200 hidden">
-                        <p class="text-sm text-gray-500 text-center">Recognized Text:</p>
-                        <p id="transcript" class="text-center text-gray-700 italic mt-1"></p>
-                    </div>
+        <div id="status" class="text-center text-gray-500 mb-6 h-6"></div>
+
+        <div id="results" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-4">Analysis Results</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-500 font-medium">Speaking Rate</p>
+                    <p id="speakingRate" class="text-2xl font-bold text-blue-800">-</p>
                 </div>
-                <div class="mt-6 text-center">
-                     <p class="text-gray-600 font-semibold mb-3">Overall Assessed Risk Level:</p>
-                     <div id="riskLevel" class="result-badge"></div>
-                     <p id="suggestion" class="mt-4 text-sm text-gray-500 max-w-md mx-auto"></p>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-green-500 font-medium">Pause Duration</p>
+                    <p id="pauseDuration" class="text-2xl font-bold text-green-800">-</p>
                 </div>
-                 <div class="mt-6 text-center">
-                    <button id="resetButton" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm">Test Again</button>
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                    <p class="text-sm text-indigo-500 font-medium">Lexical Richness</p>
+                    <p id="lexicalRichness" class="text-2xl font-bold text-indigo-800">-</p>
                 </div>
+            </div>
+             <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                <p class="text-sm text-gray-500 font-medium text-center">Transcript</p>
+                <p id="transcript" class="text-gray-700 italic text-center">"</p>
+            </div>
+            <div id="riskAssessment" class="p-4 rounded-lg">
+                <p class="text-sm font-medium text-center" id="riskLevel">-</p>
+                <p class="text-center mt-1" id="suggestion">-</p>
             </div>
         </div>
-        <p class="text-center text-xs text-gray-400 mt-4">Disclaimer: This tool is for auxiliary screening only. The result is not a medical diagnosis. Please consult a doctor if you have any concerns.</p>
     </div>
 
     <script>
-        const startButton = document.getElementById('startButton');
+        const recordButton = document.getElementById('recordButton');
         const stopButton = document.getElementById('stopButton');
-        const recordingIndicator = document.getElementById('recordingIndicator');
-        const timerDisplay = document.getElementById('timer');
-        const resultsDiv = document.getElementById('results');
-        const resetButton = document.getElementById('resetButton');
-        
+        const recordButtonText = document.getElementById('recordButtonText');
+        const status = document.getElementById('status');
+        const results = document.getElementById('results');
+        const micIcon = document.getElementById('micIcon');
+
+        // Result display elements
         const speakingRateEl = document.getElementById('speakingRate');
         const pauseDurationEl = document.getElementById('pauseDuration');
         const lexicalRichnessEl = document.getElementById('lexicalRichness');
+        const transcriptEl = document.getElementById('transcript');
+        const riskAssessmentEl = document.getElementById('riskAssessment');
         const riskLevelEl = document.getElementById('riskLevel');
         const suggestionEl = document.getElementById('suggestion');
-        const transcriptContainer = document.getElementById('transcript-container');
-        const transcriptEl = document.getElementById('transcript');
 
         let mediaRecorder;
         let audioChunks = [];
-        let startTime;
-        let timerInterval;
 
-        // URL of your backend server.
-        // If you are running both frontend and backend on the same machine for testing,
-        // 'http://127.0.0.1:5000/analyze' is the correct address.
-        const BACKEND_URL = 'http://127.0.0.1:5000/analyze';
-
-
-        async function startRecording() {
+        recordButton.addEventListener('click', async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
-                
+                mediaRecorder.start();
+
                 mediaRecorder.ondataavailable = event => {
                     audioChunks.push(event.data);
                 };
 
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    // Send the audio blob to the backend for real analysis
                     sendAudioForAnalysis(audioBlob);
                     audioChunks = [];
                 };
 
-                mediaRecorder.start();
-                startButton.disabled = true;
+                recordButton.disabled = true;
                 stopButton.disabled = false;
-                recordingIndicator.style.display = 'block';
-                resultsDiv.classList.add('hidden');
-                transcriptContainer.classList.add('hidden');
+                recordButtonText.textContent = "Recording...";
+                micIcon.classList.add('pulse');
+                status.textContent = "Recording in progress... Click 'Stop Recording' when you are finished.";
+                results.classList.add('hidden');
                 
-                startTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-
-            } catch (err) {
-                console.error("Could not access the microphone:", err);
-                alert("Could not access the microphone. Please check your device permissions.");
+            } catch (error) {
+                console.error("Error accessing microphone:", error);
+                status.textContent = "Error: Could not access microphone. Please grant permission and try again.";
             }
-        }
+        });
 
-        function stopRecording() {
+        stopButton.addEventListener('click', () => {
             if (mediaRecorder && mediaRecorder.state === "recording") {
                 mediaRecorder.stop();
             }
-            startButton.disabled = false;
+            recordButton.disabled = false;
             stopButton.disabled = true;
-            recordingIndicator.style.display = 'none';
-            clearInterval(timerInterval);
-        }
-
-        function updateTimer() {
-            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
-            const seconds = String(elapsedTime % 60).padStart(2, '0');
-            timerDisplay.textContent = `${minutes}:${seconds}`;
-        }
+            recordButtonText.textContent = "Start Recording";
+            micIcon.classList.remove('pulse');
+            status.textContent = "Processing your audio... Please wait.";
+        });
 
         async function sendAudioForAnalysis(audioBlob) {
-            // Show a loading state while waiting for the server
-            speakingRateEl.textContent = '...';
-            pauseDurationEl.textContent = '...';
-            lexicalRichnessEl.textContent = '...';
-            riskLevelEl.textContent = 'Analyzing...';
-            riskLevelEl.className = 'result-badge bg-gray-400';
-            suggestionEl.textContent = 'Please wait while we process your audio.';
-            resultsDiv.classList.remove('hidden');
-
             const formData = new FormData();
             formData.append('audio', audioBlob, 'recording.webm');
-
+            
             try {
-                const response = await fetch(BACKEND_URL, {
+                // --- 核心改动：使用相对URL而不是写死的本地地址 ---
+                const response = await fetch('/analyze', {
                     method: 'POST',
-                    body: formData,
+                    body: formData
                 });
+                // --- 改动结束 ---
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                
-                // --- Update UI with real data from backend ---
-                speakingRateEl.textContent = data.speakingRate;
-                pauseDurationEl.textContent = data.pauseDuration;
-                lexicalRichnessEl.textContent = data.lexicalRichness;
-                suggestionEl.textContent = data.suggestion;
-                
-                let riskColor = 'bg-green-500';
-                if (data.riskLevel === 'Medium Risk') riskColor = 'bg-yellow-500';
-                if (data.riskLevel === 'High Risk') riskColor = 'bg-red-500';
-                
-                riskLevelEl.textContent = data.riskLevel;
-                riskLevelEl.className = `result-badge ${riskColor}`;
-
-                if(data.transcript) {
-                    transcriptEl.textContent = `"${data.transcript}"`;
-                    transcriptContainer.classList.remove('hidden');
-                }
+                displayResults(data);
 
             } catch (error) {
-                console.error('Error sending audio to backend:', error);
-                riskLevelEl.textContent = 'Error';
-                riskLevelEl.className = 'result-badge bg-red-500';
-                suggestionEl.textContent = `Analysis failed. ${error.message}. Please check if the backend server is running correctly.`;
+                console.error("Error sending audio to backend:", error);
+                status.textContent = `Analysis failed: ${error.message}. Please try again.`;
+                results.classList.add('hidden');
             }
         }
-        
-        function resetTest() {
-            resultsDiv.classList.add('hidden');
-            startButton.disabled = false;
-            stopButton.disabled = true;
-            timerDisplay.textContent = '00:00';
+
+        function displayResults(data) {
+            status.textContent = "";
+            results.classList.remove('hidden');
+
+            speakingRateEl.textContent = data.speakingRate || "-";
+            pauseDurationEl.textContent = data.pauseDuration || "-";
+            lexicalRichnessEl.textContent = data.lexicalRichness || "-";
+            transcriptEl.textContent = `"${data.transcript || 'Could not transcribe.'}"`;
+            riskLevelEl.textContent = data.riskLevel || "Error";
+            suggestionEl.textContent = data.suggestion || "Could not generate suggestion.";
+
+            // Update risk assessment colors
+            riskAssessmentEl.classList.remove('bg-green-100', 'bg-yellow-100', 'bg-red-100', 'text-green-800', 'text-yellow-800', 'text-red-800');
+            riskLevelEl.classList.remove('text-green-700', 'text-yellow-700', 'text-red-700');
+
+            if (data.riskLevel === 'Low Risk') {
+                riskAssessmentEl.classList.add('bg-green-100', 'text-green-800');
+                riskLevelEl.classList.add('text-green-700');
+            } else if (data.riskLevel === 'Medium Risk') {
+                riskAssessmentEl.classList.add('bg-yellow-100', 'text-yellow-800');
+                riskLevelEl.classList.add('text-yellow-700');
+            } else {
+                riskAssessmentEl.classList.add('bg-red-100', 'text-red-800');
+                riskLevelEl.classList.add('text-red-700');
+            }
         }
-
-        startButton.addEventListener('click', startRecording);
-        stopButton.addEventListener('click', stopRecording);
-        resetButton.addEventListener('click', resetTest);
-
     </script>
 </body>
 </html>
+
 
