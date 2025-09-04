@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, send_from_directory
-import speech_recognition as sr
 import librosa
 import numpy as np
 import soundfile as sf
@@ -9,7 +8,26 @@ import whisper # 导入Whisper
 
 # 初始化Flask应用
 app = Flask(__name__)
-model = whisper.load_model("tiny.en") # 加载小型的Whisper模型
+
+# --- 核心改动：实现Whisper模型的懒加载 ---
+# 1. 初始化一个全局变量来存储模型，初始值为None
+model = None
+
+def get_whisper_model():
+    """
+    此函数用于获取Whisper模型。
+    它会检查模型是否已经加载到内存中，如果没有，则进行加载。
+    这可以防止在应用启动时因加载模型过慢而导致部署超时。
+    """
+    global model
+    if model is None:
+        print("Whisper model is not loaded. Loading now... (This may take a moment on the first run)")
+        # 2. 如果模型未加载，则加载它。这步操作只会在第一次被调用时执行。
+        model = whisper.load_model("tiny.en")
+        print("Whisper model loaded successfully.")
+    return model
+# --- 改动结束 ---
+
 
 # 使用Flask的after_request装饰器手动添加CORS头
 @app.after_request
@@ -47,22 +65,21 @@ def analyze():
     try:
         audio_segment = AudioSegment.from_file(audio_file)
         wav_io = io.BytesIO()
-        # 将音频转换为16kHz单声道，这是Whisper需要的格式
         audio_segment.set_frame_rate(16000).set_channels(1).export(wav_io, format="wav")
         wav_io.seek(0)
         
-        # --- 最终修复：使用本地Whisper模型进行语音识别 ---
         with sf.SoundFile(wav_io, 'r') as sound_file:
             audio_data_whisper = sound_file.read(dtype='float32')
         
-        # 将音频数据转换为numpy数组并进行识别
-        result = model.transcribe(audio_data_whisper, fp16=False)
+        # --- 核心改动：调用函数来获取模型，而不是直接使用全局变量 ---
+        # 3. 在需要模型时，调用get_whisper_model()
+        current_model = get_whisper_model()
+        result = current_model.transcribe(audio_data_whisper, fp16=False)
         transcript = result['text']
-        # --- 修复结束 ---
+        # --- 改动结束 ---
             
         word_count = len(transcript.split())
 
-        # 语音特征分析
         wav_io.seek(0)
         audio_data, sample_rate = sf.read(wav_io)
         
@@ -107,10 +124,6 @@ def analyze():
         })
 
     except Exception as e:
-        # 在生产环境中，打印详细错误到日志，但返回一个通用的错误信息给前端
         print(f"An error occurred during analysis: {e}")
         return jsonify({"error": "An internal server error occurred during analysis."}), 500
-
-
-
 
