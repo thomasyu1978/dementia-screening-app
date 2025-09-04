@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import speech_recognition as sr
 import librosa
 import numpy as np
@@ -16,6 +16,14 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
+
+# --- 新增代码：添加一个路由来服务前端HTML页面 ---
+@app.route('/')
+def serve_index():
+    # 这个函数会寻找并返回与app.py在同一个目录下的dementia_screening_demo.html文件
+    return send_from_directory('.', 'dementia_screening_demo.html')
+# --- 新增代码结束 ---
+
 
 # 用于语音识别的识别器实例
 r = sr.Recognizer()
@@ -114,3 +122,5 @@ def analyze():
         return jsonify({"error": "An internal error occurred"}), 500
 
 # 注意：用于生产环境的代码不应包含 if __name__ == '__main__': app.run()
+
+
