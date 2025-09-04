@@ -147,9 +147,7 @@ def analyze():
 #    # 启动服务器, 监听在所有网络接口的5000端口
 #    app.run(host='0.0.0.0', port=5000, debug=True)
 # --- 改动结束 ---
-```
-**为什么这么做？**
-因为生产服务器（Gunicorn）会直接导入 `app.py` 文件中的 `app` 对象来运行，而不是通过执行 `python app.py` 命令。所以 `app.run()` 不再需要了。
+
 
 ### 第2步：将您的代码上传到 GitHub
 
@@ -190,4 +188,5 @@ Render 提供免费的套餐，非常适合托管您这样的小项目。
         ```
         https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest
         
+
 
